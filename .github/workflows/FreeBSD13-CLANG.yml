@@ -1,0 +1,20 @@
+name: FreeBSD13 - CLANG Build
+
+on: [push]
+
+jobs:
+  Build:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      uses: vmactions/freebsd-vm@v0.1.5
+      with:
+        prepare: |
+          pkg install -y autotools llvm14
+        run: |
+          ./autogen.sh
+          ./configure CC=clang
+          make

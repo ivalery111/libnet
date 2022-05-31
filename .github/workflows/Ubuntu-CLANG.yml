@@ -1,0 +1,46 @@
+name: Ubuntu - CLANG Build & Tests
+
+on: [push]
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure
+      run: |
+        ./autogen.sh
+        ./configure CC=clang CFLAGS="-O3"
+
+    - name: Build
+      shell: bash
+      run: |
+        make
+
+  Unit-Test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Environment
+      run: |
+        sudo apt update
+        sudo apt install libcmocka-dev
+
+    - name: Configure
+      run: |
+        ./autogen.sh
+        ./configure CC=clang CFLAGS="-Wall -Wextra -Wshadow -Wunused -Wpedantic" --enable-tests
+
+    - name: Build
+      shell: bash
+      run: |
+        make
+
+    - name: Unit-Test
+      shell: bash
+      run: |
+        sudo ./tests/libnet_unit_tests

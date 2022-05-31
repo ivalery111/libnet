@@ -1,0 +1,37 @@
+name: FreeBSD13 - GCC Build & Tests
+
+on: [push]
+
+jobs:
+  Build:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      uses: vmactions/freebsd-vm@v0.1.5
+      with:
+        prepare: |
+          pkg install -y autotools gcc
+        run: |
+          ./autogen.sh
+          ./configure CC=gcc
+          make
+
+  Unit-Test:
+    runs-on: macos-10.15
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Unit-Test
+      uses: vmactions/freebsd-vm@v0.1.5
+      with:
+        prepare: |
+          pkg install -y autotools cmocka gcc
+        run: |
+          ./autogen.sh
+          ./configure CC=gcc CFLAGS="-Wall -Wextra -Wshadow -Wunused -Wpedantic -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op" --enable-tests
+          make
+          ./tests/libnet_unit_tests
