@@ -1,4 +1,4 @@
-name: Ubuntu - GCC Build & Tests
+name: Ubuntu - GCC Build & Unit-Test
 
 on: [push]
 
@@ -9,15 +9,22 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Setup Environment
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential autoconf automake gcc tree doxygen
+
     - name: Configure
       run: |
         ./autogen.sh
-        ./configure CC=gcc CFLAGS="-O3"
+        ./configure --prefix=/usr CC=gcc
 
     - name: Build
       shell: bash
       run: |
-        make
+        make V=1
+        make install-strip DESTDIR=/tmp
+        tree /tmp/usr
 
   Unit-Test:
     runs-on: ubuntu-latest
@@ -28,7 +35,7 @@ jobs:
     - name: Setup Environment
       run: |
         sudo apt update
-        sudo apt install libcmocka-dev
+        sudo apt install -y build-essential autoconf automake gcc tree doxygen libcmocka-dev
 
     - name: Configure
       run: |

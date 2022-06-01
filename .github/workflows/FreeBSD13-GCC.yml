@@ -1,4 +1,4 @@
-name: FreeBSD13 - GCC Build & Tests
+name: FreeBSD13 - GCC Build & Unit-Test
 
 on: [push]
 
@@ -13,11 +13,14 @@ jobs:
       uses: vmactions/freebsd-vm@v0.1.5
       with:
         prepare: |
-          pkg install -y autotools gcc
+          pkg install -y autotools gcc doxygen tree
         run: |
           ./autogen.sh
-          ./configure CC=gcc
-          make
+          ./configure --prefix=/usr CC=gcc
+
+          make V=1
+          make install-strip DESTDIR=/tmp
+          tree /tmp/usr
 
   Unit-Test:
     runs-on: macos-10.15
