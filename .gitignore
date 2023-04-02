@@ -48,3 +48,4 @@ tags
 compile_commands*
 libnet_unit_tests
 .vscode/cscope
+.direnv
