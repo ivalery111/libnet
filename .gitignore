@@ -12,7 +12,6 @@
 *~
 .*.swp
 .libs/
-Doxyfile
 GPATH
 GRTAGS
 GTAGS
@@ -44,6 +43,8 @@ ltmain.sh
 missing
 stamp-*
 tags
+tap-driver.sh
+test-driver
 .cache
 compile_commands*
 libnet_unit_tests

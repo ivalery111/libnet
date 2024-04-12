@@ -47,6 +47,7 @@ jobs:
           make V=1
           make install-strip DESTDIR=/tmp
           tree /tmp/usr
+
   unit-tests:
     strategy:
       matrix:
@@ -87,7 +88,26 @@ jobs:
       - name: Build
         run: |
           make V=1
-      - name: Run Unit-Test
+      - name: Run Linux unit tests
+        if: startsWith(matrix.os,'ubuntu')
         run: |
-          sudo ./tests/libnet_unit_tests
-          ./tests/libnet_udld_unit_tests
+          rc=true
+          make check || rc=false
+          echo "## Test Results"  >> $GITHUB_STEP_SUMMARY
+          echo '```'              >> $GITHUB_STEP_SUMMARY
+          cat test/test-suite.log >> $GITHUB_STEP_SUMMARY
+          echo '```'              >> $GITHUB_STEP_SUMMARY
+          cat test/test-suite.log
+          eval $rc
+      - name: Run macOS unit tests
+        if: startsWith(matrix.os,'macos')
+        run: |
+          rc=true
+          sudo make check || rc=false
+          echo "## Test Results"  >> $GITHUB_STEP_SUMMARY
+          echo '```'              >> $GITHUB_STEP_SUMMARY
+          cat test/test-suite.log >> $GITHUB_STEP_SUMMARY
+          echo '```'              >> $GITHUB_STEP_SUMMARY
+          cat test/test-suite.log
+          ls -l /dev/bpf* || true
+          eval $rc

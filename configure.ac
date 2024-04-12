@@ -2,11 +2,12 @@
 # Libnet autoconfiguration information file
 # Copyright (c) 1998 - 2002 Mike D. Schiffman <mike@infonexus.com>
 # Modified by: Ali Abdulkadir <autostart.ini@gmail.com>,
-#              Joachim Nilsson <troglobit@gmail.com>
+#              Joachim Wiberg <troglobit@gmail.com>
 # All rights reserved.
 #
 # Process this file with autoconf to produce a configure script.
 
+# Update VERSION for new releases, used also by the win32 build system.
 AC_INIT([libnet], m4_esyscmd([sed -n '1p' VERSION | tr -d '\n']),
 	[https://github.com/libnet/libnet/issues],[],
 	[https://github.com/libnet/libnet])
@@ -30,20 +31,20 @@ AM_SILENT_RULES([yes])
 AC_CONFIG_HEADERS([include/config.h])
 
 AC_CONFIG_FILES([Makefile \
-		 Doxyfile \
 		 libnet-config \
+		 doc/Doxyfile \
                  doc/Makefile \
-                 doc/man/Makefile \
-                 doc/man/man1/Makefile \
-                 doc/man/man3/Makefile \
                  include/Makefile \
                  include/libnet.h \
 		 libnet.pc \
                  src/Makefile \
                  sample/Makefile \
-		 tests/Makefile \
+		 test/Makefile \
 		 win32/Makefile])
 AC_CONFIG_FILES([doc/fixmanpages], [chmod a+x doc/fixmanpages])
+
+# For CMocka tests to fit in with autotools `make check`
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 
 # Check for the usual programs
 AC_PROG_CC
@@ -161,15 +162,15 @@ DX_PS_FEATURE(OFF)
 DX_CHM_FEATURE(OFF)
 DX_HTML_FEATURE(ON)
 DX_MAN_FEATURE(ON)
-DX_INIT_DOXYGEN(${PACKAGE_NAME}, [${top_builddir}/Doxyfile], [doc])
-AM_CONDITIONAL(ENABLE_DOXYGEN,[test "x${DX_FLAG_doc}" = x1])
-AM_CONDITIONAL(ENABLE_HTML,[test "x${DX_FLAG_html}" = x1])
-AM_CONDITIONAL(ENABLE_MAN,[test "x${DX_FLAG_man}" = x1])
+DX_INIT_DOXYGEN(${PACKAGE_NAME}, [${top_builddir}/doc/Doxyfile], [${top_builddir}/doc])
+AM_CONDITIONAL(ENABLE_DOXYGEN, [test "x${DX_FLAG_doc}"  = x1])
+AM_CONDITIONAL(ENABLE_HTML,    [test "x${DX_FLAG_html}" = x1])
+AM_CONDITIONAL(ENABLE_MAN,     [test "x${DX_FLAG_man}"  = x1])
 
 # Check for sample building
 AC_MSG_CHECKING([whether to build sample programs])
 AC_ARG_ENABLE([samples],
-    [AS_HELP_STRING([--enable-samples],[do not build sample programs @<:@default=no@:>@])],
+    [AS_HELP_STRING([--enable-samples],[build sample programs @<:@default=no@:>@])],
     [enable_samples=$enableval],
     [enable_samples=no]
 )
@@ -179,7 +180,7 @@ AM_CONDITIONAL([ENABLE_SAMPLES], [test "$enable_samples" = "yes"])
 # Check for tests enabling
 AC_MSG_CHECKING([enable tests])
 AC_ARG_ENABLE([tests],
-    [AS_HELP_STRING([--enable-tests],[do not enable tests @<:@default=no@:>@])],
+    [AS_HELP_STRING([--enable-tests],[enable unit tests @<:@default=no@:>@])],
     [enable_tests=$enableval],
     [enable_tests=no]
 )
@@ -198,6 +199,7 @@ CFLAGS="$CFLAGS -D_DEFAULT_SOURCE=1"
 # Check and set OS specific parameters
 AS_CASE([$target_os],
 [*linux*], [
+    LINUX="yes"
     AC_DEFINE(_BSD_SOURCE, 1,
         [Define as necessary to "unhide" header symbols.])
     AC_DEFINE(_DEFAULT_SOURCE, 1,
@@ -349,14 +351,15 @@ AS_CASE([$target_os],
     AC_MSG_WARN(${target_os} is not officially supported yet.)
     AC_MSG_RESULT(Please report this to ${PACKAGE_BUGREPORT})])
 
-# this only matters if we are building for Windows...
+# Automake conditionals for different operating systems
 AM_CONDITIONAL([WIN32], [test "${WIN32}" = "yes"])
+AM_CONDITIONAL([LINUX], [test "${LINUX}" = "yes"])
 
 # Create all files from AC_CONFIG_FILES()
 AC_OUTPUT
 
 # Helper variables for summary, below
-AS_IF([test ${DX_FLAG_doc} -eq 1], [rebuild_docs=yes], [rebuild_docs=no])
+AS_IF([test ${DX_FLAG_doc} -eq 1], [build_docs=yes], [build_docs=no])
 link_layer=`"echo"${LTLIBOBJS}"" | sed 's/.*libnet_link_\(.*\)\$.*/\1/'`
 
 AC_MSG_RESULT([
@@ -384,8 +387,8 @@ AC_MSG_RESULT([
     Static Libraries .............. ${enable_static}
     PIC ........................... ${pic_mode}
     Build Sample Programs ......... ${enable_samples}
-    Rebuild docs .................. ${rebuild_docs}
-    Tests.......................... ${enable_tests}
+    Build Doxygen documentation.... ${build_docs}
+    Run Unit Tests................. ${enable_tests}
 
 To override options
 
@@ -403,7 +406,7 @@ AS_IF([test "$WIN32" = "yes"], [AC_MSG_RESULT(
 in ./win32/.  GCC can NOT produce x64 compatible images with official
 WinPcap Developer Pack.  See README.win32 for more info.
 ])])
-AS_IF([test "$rebuild_docs" = "yes"], [AC_MSG_RESULT(
+AS_IF([test "$build_docs" = "yes"], [AC_MSG_RESULT(
 [To build/update the documentation
 
 	make doc
