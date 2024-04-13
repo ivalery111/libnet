@@ -56,7 +56,7 @@ samples = arp \
           lldp \
           udld
 
-noinst_PROGRAMS = $(samples)
+bin_PROGRAMS = $(samples)
 
 arp_SOURCES               = arp.c
 bgp4_hdr_SOURCES          = bgp4_hdr.c
