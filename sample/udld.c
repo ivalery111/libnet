@@ -6,7 +6,7 @@
 
 #include <assert.h>
 
-#define DEVICE_NAME "lo"
+void usage(char *);
 
 int
 main(int argc, char *argv[])
@@ -14,12 +14,31 @@ main(int argc, char *argv[])
     (void)argc;                                     /* unused */
 
     int c;
+    char *device = NULL;
     libnet_t *l;
     libnet_ptag_t t;
     char errbuf[LIBNET_ERRBUF_SIZE];
     size_t udld_payload_size = 0;
 
-    l = libnet_init(LIBNET_LINK, DEVICE_NAME, errbuf);
+    while((c = getopt(argc, argv, "i:h")) != EOF)
+    {
+        switch (c)
+        {
+            case 'i':
+                device = optarg;
+                break;
+            case 'h':
+                usage(argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+
+    if (device == NULL)
+    {
+        device = "lo";
+    }
+
+    l = libnet_init(LIBNET_LINK, device, errbuf);
     if (l == NULL)
     {
         fprintf(stderr, "libnet_init() failed: %s", errbuf);
@@ -156,4 +175,10 @@ main(int argc, char *argv[])
   bad:
     libnet_destroy(l);
     return (EXIT_FAILURE);
+}
+
+void
+usage(char *name)
+{
+    fprintf(stderr, "usage: %s [-i iface] \n ", name);
 }
