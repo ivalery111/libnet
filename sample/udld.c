@@ -40,7 +40,7 @@ main(int argc, char *argv[])
 
     fprintf(stdout, "[DEBUG]: device = %s\n", device);
 
-    l = libnet_init(LIBNET_LINK, device, errbuf);
+    l = libnet_init(LIBNET_RAW4, device, errbuf);
     if (l == NULL)
     {
         fprintf(stderr, "libnet_init() failed: %s", errbuf);
