@@ -38,6 +38,8 @@ main(int argc, char *argv[])
         device = "lo";
     }
 
+    fprintf("[DEBUG]: device = %s\n", device);
+
     l = libnet_init(LIBNET_LINK, device, errbuf);
     if (l == NULL)
     {
